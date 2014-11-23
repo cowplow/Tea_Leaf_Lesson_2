@@ -166,6 +166,100 @@ class Game
     hand << deck.deal_card
   end
 
+  def player_turn
+    begin
+      value_check = calculate_hand_value(player.hands[player.current_hand])
+      if value_check == 21
+        choice = 's'
+        puts "Congratulations Hand #{player.current_hand} has a Black Jack!"
+        sleep 2
+      elsif bust?(value_check)
+        puts "Sorry Hand #{player.current_hand} busts!"
+        choice = 's'
+        sleep 2
+      else  
+       choice = options_handler(player_options)
+      end
+      if choice == 's'
+        player.next_hand
+      end
+    end until player.no_more_hands(player.current_hand)
+  end
+
+  def dealer_turn
+    sleep 1.5
+    system 'clear'
+    puts "Dealer reveals their hole card.........."
+    sleep 2
+    display_cards_in_hand(true)
+    draw_hand_value(true)
+    sleep 5
+    if !all_player_hands_bust? && !all_player_hands_21?
+      while calculate_hand_value(dealer.hand) < 17
+        system 'clear'
+        puts "Dealer draws a new card........."
+        sleep 2
+        add_card_to_hand(dealer.hand)
+        display_cards_in_hand(true)
+        draw_hand_value(true)
+        sleep 5
+      end
+    end
+  end
+
+  def all_player_hands_bust?
+    bust = true
+    player.hands.size.times do |hand_num|
+      if !bust?(calculate_hand_value(player.hands[hand_num+1]))
+        bust = false
+        return bust
+      end
+    end
+    bust
+  end
+
+  def all_player_hands_21?
+    all_blackjack = true
+    player.hands.size.times do |hand_num|
+      if calculate_hand_value(player.hands[hand_num+1]) != 21
+        all_blackjack = false
+        return all_blackjack
+      end
+    end
+    return all_blackjack
+  end
+
+  def compare_hands(player_value, dealer_value)
+    if bust?(player_value)
+      return :c
+    elsif bust?(dealer_value)
+      return :p
+    elsif player_value == dealer_value
+      return :u
+    elsif player_value > dealer_value
+      return :p
+    else
+      return :c
+    end
+  end
+        
+        
+
+  def display_final_outcome
+    comp_value = calculate_hand_value(dealer.hand)
+    winning_messages = { p: "#{player.name} wins!", c: "#{dealer.name} wins!", u: "It's a push!" }
+    system 'clear'
+    puts "Displaying Final Outcome....."
+    sleep 2
+    system 'clear'
+    player.hands.size.times do |hand_num|
+      player_value = calculate_hand_value(player.hands[hand_num+1])
+      puts "*-------------------------------------------------------------*"
+      puts "|Your Hand #{hand_num + 1}: #{player_value}        #{winning_messages[compare_hands(player_value, comp_value)]}       Dealer's Hand:#{comp_value} |"
+      puts "*-------------------------------------------------------------*"
+    end
+  end
+
   def play
     deck.shuffle
     add_card_to_hand(player.hands[player.current_hand])
@@ -174,12 +268,14 @@ class Game
     add_card_to_hand(dealer.hand)
     display_cards_in_hand
     draw_hand_value
-    begin
-      chocice = options_handler(player_options)
-      if chocice == 's'
-        player.next_hand
-      end
-    end until player.no_more_hands(player.current_hand)
+    if calculate_hand_value(dealer.hand) != 21
+      player_turn
+      dealer_turn
+    else
+      puts "Dealer has a Black Jack"
+      sleep 5
+    end
+    display_final_outcome
   end
 
   def options_handler(option)
