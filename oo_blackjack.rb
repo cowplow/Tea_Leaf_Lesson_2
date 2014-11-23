@@ -151,7 +151,7 @@ class Game
   end
 
   def eligible_to_split?(hand)
-    (hand.size == 2 && hand[0] == hand[1]) ? true : false
+    hand.size == 2 && hand[0] == hand[1]
   end
 
   def split_hand
@@ -333,7 +333,7 @@ class Game
   end
 
   def bust?(hand_value)
-    hand_value > 21 ? true : false
+    hand_value > 21
   end
 
   def calculate_hand_value(hand)
