@@ -48,7 +48,11 @@ class Player < Person
   end
 
   def next_hand
-    current_hand += 1
+    self.current_hand += 1
+  end
+
+  def no_more_hands(hand_num)
+    self.hands[hand_num].nil? ? true : false
   end
 
   def to_s
@@ -144,10 +148,18 @@ class Game
     (hand.size == 2 && hand[0] == hand[1]) ? true : false
   end
 
-  def split_hand 
-    player.hands[current_hand+1] << player.hands[current_hand].pop
-    add_card_to_hand(player.hands[current_hand])
-    add_card_to_hand(player.hands[current_hand+1])
+  def split_hand
+    counter = 1
+    loop do
+      if player.no_more_hands(player.current_hand+counter)
+        player.hands[player.current_hand+counter] = [player.hands[player.current_hand].pop]
+        add_card_to_hand(player.hands[player.current_hand])
+        add_card_to_hand(player.hands[player.current_hand+counter])
+        break
+      else
+        counter += 1
+      end
+    end
   end
 
   def add_card_to_hand(hand)
@@ -160,14 +172,34 @@ class Game
     add_card_to_hand(dealer.hand)
     add_card_to_hand(player.hands[player.current_hand])
     add_card_to_hand(dealer.hand)
-    display_cards_in_hand(player.hands[player.current_hand])
+    display_cards_in_hand
     draw_hand_value
-    if eligible_to_split?(player.hands[player.current_hand])
-      puts "I can split"
+    begin
+      chocice = options_handler(player_options)
+      if chocice == 's'
+        player.next_hand
+      end
+    end until player.no_more_hands(player.current_hand)
+  end
+
+  def options_handler(option)
+    case option
+    when 'h'
+      add_card_to_hand(player.hands[player.current_hand])
+      display_cards_in_hand
+      draw_hand_value
+      return 'h'
+    when 'p'
+      split_hand
+      display_cards_in_hand
+      draw_hand_value
+      return 'p'
+    else
+      return 's'
     end
   end
 
-  def display_cards_in_hand(hand, dealer_active = false)
+  def display_cards_in_hand(dealer_active = false)
     
     if dealer_active
       system 'clear'
@@ -235,6 +267,29 @@ class Game
         puts "*-------------------------------------------------------------*"
       end
     end
+  end
+
+  def player_options
+    puts "Hand #{player.current_hand} - Would you like to Hit, Stay or Split?: (H/S/P)"
+    input = gets.chomp.downcase
+    until ['h','s','p'].include?(input)
+      puts "Invalid data entered.  Please enter H, S, or P"
+      input = gets.chomp.downcase
+    end
+
+    if input == 'p' && eligible_to_split?(player.hands[player.current_hand])
+      return input
+    elsif input == 'p' && !eligible_to_split?(player.hands[player.current_hand])
+      until ['h', 's'].include?(input)
+        puts "Sorry this hand is not eliglbe to split, please enter H or S"
+        input = gets.chomp.downcase
+        until ['h', 's'].include?(input)
+          puts "Invalid data entered. Please enter H or S"
+          input = gets.chomp.downcase
+        end
+      end
+    end
+    input
   end
 
 end
