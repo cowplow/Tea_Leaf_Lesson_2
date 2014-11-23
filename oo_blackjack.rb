@@ -77,11 +77,14 @@ end
 
 class Deck
   attr_reader :cards
+  SUITS = ['Clubs', 'Diamonds', 'Hearts', 'Spades']
+    CARDS = ['2','3','4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace']
   
   def initialize
     @cards = []
-    ['Clubs', 'Diamonds', 'Hearts', 'Spades'].each do |suit|
-      ['2','3','4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace'].each do |value|
+
+    SUITS.each do |suit|
+      CARDS.each do |value|
         card = Card.new(value, suit)
         cards << card
       end
@@ -107,7 +110,7 @@ class Card
   end
 
   def tens_card?
-    ["10", "Jack", "Queen", "King"].include?(value) ? true : false
+    Deck::CARDS[8..11].include?(value)
   end
 
   def card_value
