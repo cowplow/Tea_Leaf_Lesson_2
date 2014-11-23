@@ -53,6 +53,7 @@ class Grid
 
 
   def to_s
+    system 'clear'
     puts game_board + "\n\n"
   end
 
@@ -119,8 +120,9 @@ class Computer < Player
   end
           
   def pick_a_square(grid)
-    if smart_pick(grid)
-      return smart_pick(grid)
+    intelligent_pick = smart_pick(grid)
+    if intelligent_pick
+      return intelligent_pick
     else
       empty_spaces = []
       grid.square_hash.each do |k, v|
