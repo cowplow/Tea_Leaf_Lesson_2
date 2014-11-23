@@ -53,7 +53,7 @@ class Grid
 
 
   def to_s
-    puts game_board
+    puts game_board + "\n\n"
   end
 
 end
