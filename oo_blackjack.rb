@@ -139,8 +139,11 @@ class Game
   attr_accessor :player, :dealer, :deck
 
   def initialize
+    system 'clear'
     @player = Player.new("Chris")
     @dealer = Dealer.new("Flamingo")
+    puts dealer.to_s
+    sleep 2
     @deck = Deck.new
   end
 
@@ -189,7 +192,7 @@ class Game
   def dealer_turn
     sleep 1.5
     system 'clear'
-    puts "Dealer reveals their hole card.........."
+    puts "#{dealer.name} reveals their hole card.........."
     sleep 2
     display_cards_in_hand(true)
     draw_hand_value(true)
@@ -197,7 +200,7 @@ class Game
     if !all_player_hands_bust? && !all_player_hands_21?
       while calculate_hand_value(dealer.hand) < 17
         system 'clear'
-        puts "Dealer draws a new card........."
+        puts "#{dealer.name}'s' hand is less than 17. They draw a new card........."
         sleep 2
         add_card_to_hand(dealer.hand)
         display_cards_in_hand(true)
@@ -255,7 +258,7 @@ class Game
     player.hands.size.times do |hand_num|
       player_value = calculate_hand_value(player.hands[hand_num+1])
       puts "*-------------------------------------------------------------*"
-      puts "|Your Hand #{hand_num + 1}: #{player_value}        #{winning_messages[compare_hands(player_value, comp_value)]}       Dealer's Hand:#{comp_value} |"
+      puts "|Your Hand #{hand_num + 1}: #{player_value}         #{winning_messages[compare_hands(player_value, comp_value)]}       #{dealer.name}'s Hand:#{comp_value} |"
       puts "*-------------------------------------------------------------*"
     end
   end
@@ -353,13 +356,13 @@ class Game
     if dealer_active
       player.hands.size.times do |hand_num|
         puts "*-------------------------------------------------------------*"
-        puts "|Your Hand #{hand_num + 1}: #{calculate_hand_value(player.hands[hand_num+1])}                             Dealer's Hand:#{calculate_hand_value(dealer.hand)} |"
+        puts "|Your Hand #{hand_num + 1}: #{calculate_hand_value(player.hands[hand_num+1])}                           #{dealer.name}'s Hand:#{calculate_hand_value(dealer.hand)} |"
         puts "*-------------------------------------------------------------*"
       end
     else
       player.hands.size.times do |hand_num|
         puts "*-------------------------------------------------------------*"
-        puts "|Your Hand #{hand_num + 1}: #{calculate_hand_value(player.hands[hand_num+1])}                              Dealer's Hand:#{dealer.hand[0].card_value} |"
+        puts "|Your Hand #{hand_num + 1}: #{calculate_hand_value(player.hands[hand_num+1])}                            #{dealer.name}'s Hand:#{dealer.hand[0].card_value} |"
         puts "*-------------------------------------------------------------*"
       end
     end
