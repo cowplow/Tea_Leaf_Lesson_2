@@ -41,7 +41,7 @@ class Player < Person
   attr_accessor :hands, :current_hand
 
   def initialize(name)
-    super(name)
+    super
     @hands = Hash.new
     @current_hand = 1
     hands[current_hand] = []
@@ -51,13 +51,21 @@ class Player < Person
     self.current_hand += 1
   end
 
-  def no_more_hands(hand_num)
-    self.hands[hand_num].nil? ? true : false
+  def no_more_hands?(hand_num)
+    self.hands[hand_num].nil?
   end
 
   def to_s
     puts "Hi my name is #{name} and I will be the player!"
   end
+
+  def can_split?
+    active_hand.size == 2 && active_hand[0] == active_hand[1]
+  end
+
+  def active_hand
+    self.hands[self.current_hand]
+  end  
 
 end
 
@@ -65,7 +73,7 @@ class Dealer < Person
   attr_accessor :hand
 
   def initialize(name)
-    super(name)
+    super
     @hand = []
   end
 
@@ -150,16 +158,12 @@ class Game
     @deck = Deck.new
   end
 
-  def eligible_to_split?(hand)
-    hand.size == 2 && hand[0] == hand[1]
-  end
-
   def split_hand
     counter = 1
     loop do
-      if player.no_more_hands(player.current_hand+counter)
-        player.hands[player.current_hand+counter] = [player.hands[player.current_hand].pop]
-        add_card_to_hand(player.hands[player.current_hand])
+      if player.no_more_hands?(player.current_hand+counter)
+        player.hands[player.current_hand+counter] = [player.active_hand.pop]
+        add_card_to_hand(player.active_hand)
         add_card_to_hand(player.hands[player.current_hand+counter])
         break
       else
@@ -174,7 +178,7 @@ class Game
 
   def player_turn
     begin
-      value_check = calculate_hand_value(player.hands[player.current_hand])
+      value_check = calculate_hand_value(player.active_hand)
       if value_check == 21
         choice = 's'
         puts "Congratulations Hand #{player.current_hand} has a Black Jack!"
@@ -189,7 +193,7 @@ class Game
       if choice == 's'
         player.next_hand
       end
-    end until player.no_more_hands(player.current_hand)
+    end until player.no_more_hands?(player.current_hand)
   end
 
   def dealer_turn
@@ -268,9 +272,9 @@ class Game
 
   def play
     deck.shuffle
-    add_card_to_hand(player.hands[player.current_hand])
+    add_card_to_hand(player.active_hand)
     add_card_to_hand(dealer.hand)
-    add_card_to_hand(player.hands[player.current_hand])
+    add_card_to_hand(player.active_hand)
     add_card_to_hand(dealer.hand)
     display_cards_in_hand
     draw_hand_value
@@ -287,7 +291,7 @@ class Game
   def options_handler(option)
     case option
     when 'h'
-      add_card_to_hand(player.hands[player.current_hand])
+      add_card_to_hand(player.active_hand)
       display_cards_in_hand
       draw_hand_value
       return 'h'
@@ -379,9 +383,9 @@ class Game
       input = gets.chomp.downcase
     end
 
-    if input == 'p' && eligible_to_split?(player.hands[player.current_hand])
+    if input == 'p' && player.can_split?
       return input
-    elsif input == 'p' && !eligible_to_split?(player.hands[player.current_hand])
+    elsif input == 'p' && !player.can_split?
       until ['h', 's'].include?(input)
         puts "Sorry this hand is not eliglbe to split, please enter H or S"
         input = gets.chomp.downcase
